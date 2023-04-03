@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promq01
+  labels:
+    app: promq01
+spec:
+  selector:
+    matchLabels:
+      app: promq01
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: promq01
+    spec:
+      containers:
+      - name: promq01
+        image: rabbitmq
+        ports:
+        - name: promq01-port
+          containerPort: 15672
+        env: 
+         - name: RABBITMQ_DEFAULT_PASS
+           valueFrom:
+             secretKeyRef:
+               name: app-secret
+               key: rmq-pass
+         - name: RABBITMQ_DEFAULT_USER
+           value: "test"

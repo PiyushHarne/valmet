@@ -1,0 +1,53 @@
+---
+- name: Install MySQL
+  hosts: all
+  become: true
+  tasks:
+    - name: Install MySQL Server
+      yum:
+        name: mysql-server
+        state: present
+
+    - name: Start MySQL Service
+      systemd:
+        name: mysqld
+        state: started
+        enabled: yes
+
+- name: Secure MySQL Installation
+  hosts: all
+  become: true
+  tasks:
+    - name: Generate MySQL Root Password
+      command: "openssl rand -base64 32"
+      register: mysql_root_password
+
+    - name: Save MySQL Root Password to File
+      copy:
+        content: "{{ mysql_root_password.stdout }}"
+        dest: "/root/.mysql_secret"
+        mode: '0600'
+
+    - name: Remove Anonymous Users
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+
+    - name: Remove Test Database
+      mysql_db:
+        name: test
+        state: absent
+
+    - name: Create MySQL User
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        host: "{{ mysql_host }}"
+        priv: "*.*:ALL,GRANT"
+        state: present
+
+    - name: Create MySQL Database
+      mysql_db:
+        name: "{{ mysql_database }}"
+        state: present

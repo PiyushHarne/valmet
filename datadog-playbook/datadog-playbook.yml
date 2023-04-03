@@ -1,0 +1,71 @@
+- name: Configure Datadog Agent
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Add Datadog repository
+      yum_repository:
+        name: datadog
+        description: Datadog, Inc.
+        baseurl: https://yum.datadoghq.com/rpm/x86_64/
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: https://yum.datadoghq.com/DATADOG_RPM_KEY.public
+
+    - name: Install Datadog Agent
+      yum:
+        name: datadog-agent
+        state: latest
+
+    - name: Set Datadog API key
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^api_key:'
+        line: 'api_key: YOUR_API_KEY'
+
+    - name: Set Datadog log collection
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^logs_enabled:'
+        line: 'logs_enabled: true'
+
+    - name: Set Datadog process collection
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^process_config:'
+        line: |
+          process_config:
+            enabled: 'true'
+
+    - name: Set Datadog network performance monitoring
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^network_performance_enabled:'
+        line: 'network_performance_enabled: true'
+
+    - name: Set Datadog system probe
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^system_probe_config:'
+        line: |
+          system_probe_config:
+            enabled: true
+
+    - name: Set Datadog APM
+      lineinfile:
+        path: /etc/datadog-agent/datadog.yaml
+        regexp: '^apm_config:'
+        line: |
+          apm_config:
+            enabled: true
+
+    - name: Set Datadog Apache HTTP server metrics
+      lineinfile:
+        path: /etc/datadog-agent/conf.d/apache.d/conf.yaml
+        regexp: '^#   - apache_status_url:'
+        line: '- apache_status_url: http://localhost/server-status?auto'
+
+    - name: Restart Datadog Agent
+      service:
+        name: datadog-agent
+        state: restarted

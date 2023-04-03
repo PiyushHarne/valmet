@@ -1,0 +1,19 @@
+---
+- name: Add firewall rules
+  hosts: servers
+  become: true
+  vars:
+    allowed_ips:
+      - "192.168.1.100"
+      - "192.168.1.101"
+
+  tasks:
+    - name: Allow MySQL traffic from specific IPs
+      firewalld:
+        zone: public
+        permanent: true
+        service: mysql
+        state: enabled
+        immediate: true
+        rich_rule: "rule family='ipv4' source address='{{ item }}' accept"
+      with_items: "{{ allowed_ips }}"

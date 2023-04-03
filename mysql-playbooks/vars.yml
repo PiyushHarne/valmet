@@ -1,0 +1,5 @@
+---
+mysql_user: username
+mysql_password: password
+mysql_host: host
+mysql_database: database
